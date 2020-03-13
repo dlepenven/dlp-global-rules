@@ -1,0 +1,197 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<itop_design xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" version="1.0">
+    <classes>
+        <class id="ActionRule" _delta="define">
+            <parent>cmdbAbstractObject</parent>
+            <properties>
+                <comment><![CDATA[/**
+                * Extension definition
+                * 
+                * @author    David LE PENVEN <dlepenven@msn.com>
+                * @copyright 2020 David LE PENVEN
+                * @license   AGPL http://opensource.org/licenses/AGPL-3.0
+                */]]></comment>
+                <category>bizmodel,searchable,changemgmt</category>
+                <abstract>false</abstract>
+                <key_type>autoincrement</key_type>
+                <db_table>actionrule</db_table>
+                <db_key_field>id</db_key_field>
+                <db_final_class_field/>
+                <naming>
+                    <attributes>
+                        <attribute id="name"/>
+                    </attributes>
+                </naming>
+                <display_template/>
+                <icon/>
+                <reconciliation>
+                    <attributes>
+                        <attribute id="name"/>
+                    </attributes>
+                </reconciliation>
+            </properties>
+            <fields>
+                <field id="name" xsi:type="AttributeString">
+                    <sql>name</sql>
+                    <default_value/>
+                    <is_null_allowed>false</is_null_allowed>
+                </field>
+                <field id="status" xsi:type="AttributeEnum">
+                    <values>
+                        <value id="enabled">enabled</value>
+                        <value id="disabled">disabled</value>
+                    </values>
+                    <sql>status</sql>
+                    <default_value>disabled</default_value>
+                    <is_null_allowed>false</is_null_allowed>
+                </field>
+                <field id="trigger_type" xsi:type="AttributeEnum">
+                    <values>
+                        <value id="create">create</value>
+                    </values>
+                    <sql>trigger_type</sql>
+                    <default_value>create</default_value>
+                    <is_null_allowed>false</is_null_allowed>
+                </field>
+                <field id="description" xsi:type="AttributeText">
+                    <sql>description</sql>
+                    <default_value/>
+                    <is_null_allowed>true</is_null_allowed>
+                </field>
+                <field id="target_class" xsi:type="AttributeString">
+                    <sql>target_class</sql>
+                    <default_value/>
+                    <is_null_allowed>false</is_null_allowed>
+                </field>
+                <field id="condition" xsi:type="AttributeString">
+                    <sql>condition</sql>
+                    <default_value/>
+                    <is_null_allowed>true</is_null_allowed>
+                </field>
+                <field id="values_to_apply" xsi:type="AttributeText">
+                    <sql>values_to_apply</sql>
+                    <default_value/>
+                    <is_null_allowed>true</is_null_allowed>
+                </field>
+            </fields>
+            <presentation>
+                <details>
+                    <items>
+                        <item id="name">
+                            <rank>10</rank>
+                        </item>
+                        <item id="status">
+                            <rank>20</rank>
+                        </item>
+                        <item id="trigger_type">
+                            <rank>30</rank>
+                        </item>
+                        <item id="description">
+                            <rank>40</rank>
+                        </item>
+                        <item id="target_class">
+                            <rank>50</rank>
+                        </item>
+                        <item id="condition">
+                            <rank>60</rank>
+                        </item>
+                        <item id="values_to_apply">
+                            <rank>70</rank>
+                        </item>
+                    </items>
+                </details>
+                <search>
+                    <items>
+                        <item id="name">
+                            <rank>10</rank>
+                        </item>
+                    </items>
+                </search>
+                <list>
+                    <items>
+                        <item id="name">
+                            <rank>10</rank>
+                        </item>
+                    </items>
+                </list>
+            </presentation>
+            <methods>
+                <method id="DisplayBareRelations">
+                    <static>false</static>
+                    <access>public</access>
+                    <type>Overload-cmdbAbstractObject</type>
+                    <code><![CDATA[function DisplayBareRelations(WebPage $oPage, $bEditMode = false) {
+                        parent::DisplayBareRelations($oPage, $bEditMode);
+                        if (!$bEditMode)  {
+                            if ($this instanceof ActionRule)  {
+                                $oPage->SetCurrentTab(Dict::S('Class:ActionRule/Title:Tester'));
+                                $sUrl =  utils::GetAbsoluteUrlModulePage('dlp-global-rules', 'tester.dlp-global-rules.php') 
+                                    . '&action=tester&oid=' . $this->GetKey();
+                                $oPage->add("<div id='tester' class='resizable' style='height:1000px;'>
+                                <iframe src='" . $sUrl. "' style='width:100%;height:100%;'></iframe>
+                                </div>");
+                            }
+                        }
+                    }]]></code>
+                </method>
+                <method id="parseValuesToApply">
+                    <static>false</static>
+                    <access>public</access>
+                    <type>Overload-DBObject</type>
+                    <comment><![CDATA[/**
+                     * This Function will parse the values to apply
+                     * 
+                     * @return Mixed array of Parsed data, false in case of error
+                    */]]></comment>
+                    <code><![CDATA[	static function parseValuesToApply($oObj)
+                    {
+                        $aDatas = [];
+                        $sValuesToApply = $oObj->Get('values_to_apply');
+                        if (trim($sValuesToApply) === '') {
+                            return false;
+                        }
+                        $aValuesToApply = explode(PHP_EOL, $sValuesToApply);
+                        foreach ($aValuesToApply as $sValue) {
+                            $aValue = explode(':', $sValue);
+                            if (isset($aValue[0])) {
+                                switch($aValue[0]) {
+                                case 'value':
+                                    if (count($aValue) === 3) {
+                                        $aDatas[$aValue[1]] = $aValue[2];
+                                    } else {
+                                        return false;
+                                    }
+                                    break;
+                                case 'stimuli':
+                                    $aDatas['stimuli'] = $aValue[1];
+                                    break;
+                                }
+                            } else {
+                                return false;
+                            }
+                        }
+                        return $aDatas;
+                    }]]></code>
+                </method>
+            </methods>
+        </class>
+    </classes>
+    <menus>
+        <menu id="ActionRuleConfig" xsi:type="OQLMenuNode" _delta="define">
+            <rank>49</rank>
+            <parent>AdminTools</parent>
+            <oql><![CDATA[SELECT ActionRule]]></oql>
+            <do_search>1</do_search>
+            <search_form_open>1</search_form_open>
+        </menu>
+    </menus>
+    <user_rights>
+        <groups>
+            <group id="AdminTools">
+                <classes>
+                    <class id="ActionRule" _delta="define"/>
+                </classes>
+            </group>
+        </groups>
+    </user_rights>
+</itop_design>
