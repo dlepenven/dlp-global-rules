@@ -17,5 +17,11 @@ Dict::Add('FR FR', 'French', 'Français', array(
     'Class:ActionRule/Attribute:target_class' => 'Classe cible',
     'Class:ActionRule/Attribute:condition' => 'Condition',
     'Class:ActionRule/Attribute:values_to_apply' => 'Valeurs à appliquer',
-    'Class:ActionRule/Title:Tester' => 'Tests'
+    'Class:ActionRule/Title:Tester' => 'Tests',
+    'Menu:ActionRuleCreate' => 'Créer une règle',
+    'Menu:ActionRuleCreate+' => 'Créer une règle',
+    'Menu:ActionRules' => 'Règles sur les objets',
+    'Menu:ActionRules+' => 'Règles sur les objets',
+    'Menu:ActionRuleList' => 'Liste des règles',
+    'Menu:ActionRuleList+' => 'Liste des règles',
 ));

@@ -23,7 +23,7 @@
                     </attributes>
                 </naming>
                 <display_template/>
-                <icon/>
+                <icon>images/rule_check.png</icon>
                 <reconciliation>
                     <attributes>
                         <attribute id="name"/>
@@ -152,18 +152,48 @@
                         }
                         $aValuesToApply = explode(PHP_EOL, $sValuesToApply);
                         foreach ($aValuesToApply as $sValue) {
-                            $aValue = explode(':', $sValue);
+                            $aValue = explode(':', trim($sValue));
                             if (isset($aValue[0])) {
                                 switch($aValue[0]) {
                                 case 'value':
                                     if (count($aValue) === 3) {
-                                        $aDatas[$aValue[1]] = $aValue[2];
+                                        $aDatas[] = [
+                                            'type' => 'value',
+                                            'col' => $aValue[1],
+                                            'value' => $aValue[2],
+                                        ];
                                     } else {
                                         return false;
                                     }
                                     break;
                                 case 'stimuli':
-                                    $aDatas['stimuli'] = $aValue[1];
+                                    if (count($aValue) === 2) {
+                                        $aDatas[] = [
+                                            'type' => 'stimuli',
+                                            'value' => $aValue[1],
+                                        ];
+                                    } else {
+                                        return false;
+                                    }
+                                    break;
+                                case 'link':
+                                    if (count($aValue) >= 3) {
+                                        $aTmp = [
+                                            'type' => 'link',
+                                            'col' => $aValue[1],
+                                            'value' => [],
+                                        ];
+                                        // look for values and set them
+                                        foreach ($aValue as $iK => $sVal) {
+                                            if ($iK !== 0 && $iK !== 1)
+                                            $aTmp['value'][] = $sVal;
+                                        }
+                                        $aDatas[] = $aTmp;
+                                    } else {
+                                        return false;
+                                    }
+                                    break;
+                                default:
                                     break;
                                 }
                             } else {
@@ -177,12 +207,25 @@
         </class>
     </classes>
     <menus>
-        <menu id="ActionRuleConfig" xsi:type="OQLMenuNode" _delta="define">
-            <rank>49</rank>
-            <parent>AdminTools</parent>
+        <menu id="ActionRules" xsi:type="MenuGroup" _delta="define">
+            <rank>50</rank>
+            <enable_admin_only>1</enable_admin_only>
+            <enable_class>ActionRule</enable_class>
+        </menu>
+        <menu id="ActionRuleList" xsi:type="OQLMenuNode" _delta="define">
+            <rank>1</rank>
+            <parent>ActionRules</parent>
             <oql><![CDATA[SELECT ActionRule]]></oql>
             <do_search>1</do_search>
             <search_form_open>1</search_form_open>
+            <enable_admin_only>1</enable_admin_only>
+        </menu>
+        <menu id="ActionRuleCreate" xsi:type="NewObjectMenuNode" _delta="define">
+            <rank>2</rank>
+            <parent>ActionRules</parent>
+            <enable_admin_only>1</enable_admin_only>
+            <class>ActionRule</class>
+            <enable_class>ActionRule</enable_class>
         </menu>
     </menus>
     <user_rights>

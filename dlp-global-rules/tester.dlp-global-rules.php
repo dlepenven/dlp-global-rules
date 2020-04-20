@@ -30,46 +30,9 @@ $sHtml = '';
 switch($sAction) {
 case 'tester': // This is for testing datas
     if (isset($_GET['oid'])) {
+        // we should check for rights before, even if it is harmless
         if (ActionRuleHelper::init($_GET['oid'])) {
-            if (ActionRuleHelper::checkObject()) {
-                $sHtml .= "<tr><td class='table-success'>OK</td><td>The class " . ActionRuleHelper::getTargetClass() . " is valid</td></tr>";
-                $sClass = ActionRuleHelper::getTargetClass();
-                $oClass = new $sClass;
-                if (!ActionRuleHelper::checkValueToApply()) {
-                    // Syntax error
-                    $sHtml .= "<tr><td class='table-danger'>NOK</td><td>There is a syntax error in values</td></tr>";
-                } else {
-                    $sHtml .= "<tr><td class='table-success'>OK</td><td>The syntax of values is valid</td></tr>";
-                    if (!ActionRuleHelper::checkCondition()) {
-                        // condition is not good
-                        $sHtml .= "<tr><td class='table-danger'>NOK</td><td>There is a syntax error in condition</td></tr>";
-                    } else {
-                        $sHtml .= "<tr><td class='table-success'>OK</td><td>The syntax of condition is valid</td></tr>";
-                        foreach (ActionRuleHelper::getValuesToApply() as $sK => $sValue) {
-                            if ($sK === 'stimuli') {
-                                // check if the stimuli $sValue can be applied
-                                $aStimuli = MetaModel::EnumStimuli($sClass);
-                                if (!isset($aStimuli[$sValue])) {
-                                    $sHtml .= "<tr><td class='table-danger'>NOK</td><td>The transition " . $sValue . " is not valid for the object " . $sClass . "</td></tr>";
-                                } else {
-                                    $sHtml .= "<tr><td class='table-success'>OK</td><td>The transition " . $sValue . " is valid for the object " . $sClass . "</td></tr>";
-                                }
-                            } else {
-                                // check if the col exist and the value can be
-                                if (!MetaModel::IsValidAttCode($sClass, $sK)) {
-                                    $sHtml .= "<tr><td class='table-danger'>NOK</td><td>The attribute " . $sK . " is not valid for the object " . $sClass . "</td></tr>";
-                                } else {
-                                    $sHtml .= "<tr><td class='table-success'>OK</td><td>The attribute " . $sK . " is valid for the object " . $sClass . "</td></tr>";
-                                    // check if the value is OK to apply
-                                    // How to check this?
-                                }
-                            }
-                        }
-                    }
-                }
-            } else {
-                $sHtml .= "<tr><td class='table-danger'>NOK</td><td>The class " . $sClass . " is not valid</td></tr>";
-            }
+            $sHtml .= ActionRuleHelper::checkAll(true);
         } else {
             $sHtml .= '<tr><td class="table-danger">NOK</td><td></td>ActionRule object not found</tr>';
         }

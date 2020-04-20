@@ -95,13 +95,17 @@ class ActionRuleHelper
     /** 
      * This function will check if target ckass is fine 
      * 
+     * @param string $sHtml Html string to fill to make an html display
+     * 
      * @return bool True if ok, false in other cases
      */
-    public static function checkObject() : bool
+    public static function checkObject(string &$sHtml) : bool
     {
         if (MetaModel::IsValidClass(self::getTargetClass())) {
+            $sHtml .= self::_makeHtmlTableRow(true, "The class " . self::getTargetClass() . " is valid");
             return true;
         } else {
+            $sHtml .= self::_makeHtmlTableRow(false, "The class " . self::getTargetClass() . " is not valid");
             return false;
         }
     }
@@ -111,72 +115,169 @@ class ActionRuleHelper
      * 
      * @return bool True if ok, false in other cases
      */
-    public static function checkValueToApply(): bool
+    public static function checkValueToApply(string &$sHtml): bool
     {
         $aValues = self::getActionRuleObject()->parseValuesToApply(self::getActionRuleObject());
-        if ($aValues !== false) {
-            self::setValuesToApply($aValues);
-            return true;
-        } else {
+        if ($aValues === false) {
+            $sHtml .= self::_makeHtmlTableRow(false, "There is a syntax error in values");
             return false;
+        } else {
+            self::setValuesToApply($aValues);
+            $sHtml .= self::_makeHtmlTableRow(true, "The syntax of values is valid");
+            return true;
         }
     }
 
     /**
      * This function will test all values
      * 
+     * @param bool   $bHtml If true, return an html string at the end of the function
+     * @param string $sHtml The current html string
+     * 
      * @return bool True in case of success, false in other cases with at least 1 error
      */
-    public static function checkValues(): bool
-    {
-        foreach (self::getValuesToApply() as $sK => $sValue) {
-            if ($sK === 'stimuli') {
+    public static function checkValues(bool $bHtml, string &$sHtml): bool
+    {   
+        // Get stimulis list
+        $aStimuli = MetaModel::EnumStimuli(self::getTargetClass());
+        $aLinkedClasses = MetaModel::GetLinkedSets(self::getTargetClass());
+        // loop on all values
+        foreach (self::getValuesToApply() as $aTable) {
+            switch ($aTable['type']) {
+            case 'stimuli':
                 // check if the stimuli $sValue can be applied
-                $aStimuli = MetaModel::EnumStimuli(self::getTargetClass());
-                if (!isset($aStimuli[$sValue])) {
-                    return false;
+                if (!isset($aStimuli[$aTable['value']])) {
+                    $sHtml .= self::_makeHtmlTableRow(false, "The transition " . $aTable['value'] . " is not valid for the object " . self::getTargetClass());
+                    if ($bHtml === false) {
+                        return false;
+                    }
+                } else {
+                    $sHtml .= self::_makeHtmlTableRow(true, "The transition " . $aTable['value'] . " is valid for the object " . self::getTargetClass());
                 }
-            } else {
+                break;
+            case 'value':
                 // check if the col exist and the value can be
-                if (!MetaModel::IsValidAttCode(self::getTargetClass(), $sK)) {
+                if (!MetaModel::IsValidAttCode(self::getTargetClass(), $aTable['col'])) {
+                    $sHtml .= self::_makeHtmlTableRow(false, "The attribute " . $aTable['col'] . " is not valid for the object " . self::getTargetClass());
+                    if ($bHtml === false) {
+                        return false;
+                    }
+                } else {
+                    $sHtml .= self::_makeHtmlTableRow(true, "The attribute " . $aTable['col'] . " is valid for the object " . self::getTargetClass());              
+                }
+                break;
+            case 'link':
+                if (MetaModel::IsValidAttCode(self::getTargetClass(), $aTable['col'])) {
+                    $oAtt = MetaModel::GetAttributeDef(self::getTargetClass(), $aTable['col']);
+                    // check if linkset, also, is direct linkset, we should have one value only
+                    if (!$oAtt->IsLinkset() 
+                        || (!$oAtt->IsIndirect() && count($aTable['value']) !== 1)
+                    ) {
+                        $sHtml .= self::_makeHtmlTableRow(false, "The attribute " . $aTable['col'] . " is not a valid linkset for the object " . self::getTargetClass());
+                        if ($bHtml === false) {
+                            return false;
+                        }
+                    } else {
+                        $sHtml .= self::_makeHtmlTableRow(true, "The attribute " . $aTable['col'] . " is a valid linkset for the object " . self::getTargetClass());
+                        $bExtKey = false;
+                        $sLinkClass = $oAtt->GetLinkedClass();
+                        foreach ($aTable['value'] as $sLinkValue) {
+                            $aLinkValue = explode('/', $sLinkValue);
+                            if (count($aLinkValue) === 2) {
+                                if (MetaModel::IsValidAttCode($sLinkClass, $aLinkValue[0])
+                                    || (!$oAtt->IsIndirect() && $aLinkValue[0] === 'id')
+                                ) {
+                                    $sHtml .= self::_makeHtmlTableRow(true, "The value " . $sLinkValue . " is valid for linkset " . $aTable['col'] . " for the object " . self::getTargetClass());
+                                    // Depends on link type, we check the ext key
+                                    if ($oAtt->IsIndirect()) { // n:n link
+                                        if ($aLinkValue[0] === $oAtt->GetExtKeyToRemote()) {
+                                            $sHtml .= self::_makeHtmlTableRow(true, "The external key " . $sLinkValue . " is valid for linkset " . $aTable['col'] . " for the object " . self::getTargetClass());
+                                            $bExtKey = true;
+                                        }
+                                    } else { // 1:n link
+                                        if ($aLinkValue[0] === 'id') {
+                                            $sHtml .= self::_makeHtmlTableRow(true, "The external key " . $sLinkValue . " is valid for linkset " . $aTable['col'] . " for the object " . self::getTargetClass());
+                                            $bExtKey = true;
+                                        }
+                                    }
+                                } else {
+                                    $sHtml .= self::_makeHtmlTableRow(false, "The value " . $sLinkValue . " is not a valid for linkset " . $aTable['col'] . " for the object " . self::getTargetClass());
+                                    if ($bHtml === false) {
+                                        return false;
+                                    }
+                                }
+                            } else {
+                                $sHtml .= self::_makeHtmlTableRow(false, "The value " . $sLinkValue . " is not valid for linkset " . $aTable['col'] . " for the object " . self::getTargetClass());
+                                if ($bHtml === false) {
+                                    return false;
+                                }
+                            }
+                        }
+                    }
+                    if ($bExtKey === false) {
+                        $sHtml .= self::_makeHtmlTableRow(false, "No ext_key found for linkset " . $aTable['col'] . " for the object " . self::getTargetClass());
+                        if ($bHtml === false) {
+                            return false;
+                        }
+                    }                   
+                } else {
+                    $sHtml .= self::_makeHtmlTableRow(false, "The attribute " . $aTable['col'] . " is not a valid linkset for the object " . self::getTargetClass());
+                    if ($bHtml === false) {
+                        return false;
+                    }
+                }
+                break;
+            default:
+                if ($bHtml === false) {
                     return false;
                 }
+                break;
             }
         }
-        // default, when all is OK
+        // Default behaviour : Every thing is ok, or html is enabled
         return true;
     }
 
     /**
      * This function will test every params of ActionRule object
      * 
-     * @return bool True is OK. False in other cases
+     * @param bool $bHtml If set to true, then return html code instead of boolean
+     * 
+     * @return mixed True is OK. False in other cases, html code if bHtml is set to true
      */
-    public static function checkAll(): bool
+    public static function checkAll(bool $bHtml = false)
     {
-        if (!ActionRuleHelper::checkObject()
-            || !ActionRuleHelper::checkValueToApply()
-            || ActionRuleHelper::checkValues() === false
-            || !ActionRuleHelper::checkCondition()
-        ) {
-            return false;
+        $sHtml = '';
+        $bCheckObj = ActionRuleHelper::checkObject($sHtml);
+        $bCheckValueToApply = ActionRuleHelper::checkValueToApply($sHtml);
+        $bCheckValue = ActionRuleHelper::checkValues($bHtml, $sHtml);
+        $bCheckCondition = ActionRuleHelper::checkCondition($sHtml);
+        if ($bHtml === true) {
+            return $sHtml;
         } else {
-            return true;
+            if ($bCheckObj === true && $bCheckValueToApply === true
+                && $bCheckValue === true && $bCheckCondition === true
+            ) {
+                return true;
+            } else {
+                return false;
+            }
         }
     }
 
     /**
      * This function will try to execute OQL query to check the syntax of condition
      * 
+     * @param string $sHtml The current html string
+     * 
      * @return bool True if OK, false in other cases
      */
-    public static function checkCondition(): bool
+    public static function checkCondition(string &$sHtml): bool
     {
         if (self::getActionRuleObject()->Get('condition') != ''
             && !is_null(self::getActionRuleObject()->Get('condition'))
         ) {
             $sWhere = " WHERE " . self::getActionRuleObject()->Get('condition');
-
         } else {
             $sWhere = "";
         }
@@ -184,9 +285,11 @@ class ActionRuleHelper
             // try to exec query, if not good, it will trigger exception
             new DBObjectSet(DBObjectSearch::FromOQL("SELECT " . self::getTargetClass() . $sWhere));
         } catch(OQLException $e) {
+            $sHtml .= self::_makeHtmlTableRow(false, "There is a syntax error in condition"); 
             return false;
         }
         // nothing to do, so it is ok by default
+        $sHtml .= self::_makeHtmlTableRow(true, "The syntax of condition is valid");
         return true;        
     }
     
@@ -223,26 +326,64 @@ class ActionRuleHelper
      */
     public static function execAll($oObject): void
     {
+        // at this steps, values has been checked already
         // Check if condition is
-        foreach (self::getValuesToApply() as $sK => $sValue) {
-            if ($sK === 'stimuli') {
-                // check if the stimuli $sValue can be applied
-                $aStimuli = MetaModel::EnumStimuli(self::getTargetClass());
-                if (isset($aStimuli[$sValue])) {
-                    $oObject->ApplyStimulus($sValue);
-                } else {
-                    break;
-                }
-            } else {
-                // check if the col exist and the value can be
-                if (MetaModel::IsValidAttCode(self::getTargetClass(), $sK)) {
-                    $oObject->Set($sK, $sValue);
-                } else {
+        foreach (self::getValuesToApply() as $sK => $aTable) {
+            switch($aTable['type']) {
+            case 'stimuli':
+                $oObject->ApplyStimulus($aTable['value']);
                 break;
+            case 'value':
+                $oObject->Set($aTable['col'], $aTable['value']);
+                break;
+            case 'link':
+                $oAtt = MetaModel::GetAttributeDef(self::getTargetClass(), $aTable['col']);
+                $sLinkClass = $oAtt->GetLinkedClass();
+                if ($oAtt->IsIndirect()) {
+                    $oLinkedSet = new $sLinkClass;
+                    $oSet = $oObject->Get($aTable['col']);
                 }
+                foreach ($aTable['value'] as $sLinkValue) {
+                    $aLinkValue = explode('/', $sLinkValue);
+                    if ($oAtt->IsIndirect()) {
+                        $oLinkedSet->Set($aLinkValue[0], $aLinkValue[1]);
+                    } else {
+                        // only one value here
+                        // get link object, set new value for
+                        $oLnkObj = MetaModel::GetObject($sLinkClass, $aLinkValue[1], false); // false => not sure it exists
+                        if (is_object($oLnkObj)) {
+                            $oLnkObj->Set($oAtt->GetExtKeyToMe(), $oObject->GetKey());
+                            $oLnkObj->DBUpdate();
+                        }
+                    }
+                }
+                if ($oAtt->IsIndirect()) {
+                    $oSet->AddObject($oLinkedSet);
+                    $oObject->Set($aTable['col'], $oSet);
+                }
+                break;
             }
         }
-        // This could be a problem because it will trigger 'normal' action rules
+        // Update values
         $oObject->DBUpdate();
+    }
+
+    /**
+     * This function will make html table row
+     * 
+     * @param bool   $bValid Tells if the test is valid
+     * @param string $sMsg   The message to display
+     * 
+     * @return string The html message
+     */
+    private static function _makeHtmlTableRow(bool $bValid, string $sMsg) : string
+    {
+        if ($bValid === true) {
+            $sCell1 = "<td class='table-success'>OK</td>";
+        } else {
+            $sCell1 = "<td class='table-danger'>NOK</td>";
+        }
+
+        return "<tr>" . $sCell1 . "<td>" . $sMsg . "</td>" . "</tr>";
     }
 }

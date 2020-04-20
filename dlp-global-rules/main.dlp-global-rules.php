@@ -16,15 +16,8 @@ class ActionRuleActions implements iApplicationObjectExtension {
     public function OnCheckToDelete($oObject){}
     // Not used
     public function OnDBDelete($oObject, $oChange = null){}
-
-    /**
-     * Triggered on update
-     */
-    public function OnDBUpdate($oObject, $oChange = null)
-    {
-        // not enable FTM
-        //$this->_triggerActions($oObject, "update");
-    }
+    // Not used
+    public function OnDBUpdate($oObject, $oChange = null){}
 
     /**
      * Triggered on insert
