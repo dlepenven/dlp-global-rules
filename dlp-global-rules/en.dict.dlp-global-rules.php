@@ -18,11 +18,17 @@ Dict::Add('EN US', 'English', 'English', array(
     'Class:ActionRule/Attribute:condition' => 'Condition',
     'Class:ActionRule/Attribute:values_to_apply' => 'Value to apply',
     'Class:ActionRule/Title:Tester' => 'Tests',
+    'Class:ActionRuleTrigger' => 'ActionRule Trigger',
+    'Class:ActionRuleTrigger/Attribute:obj_id' => 'Target object ID',
+    'Class:ActionRuleTrigger/Attribute:actionrule_id' => 'Rule ID',
+    'Class:ActionRuleTrigger/Attribute:date' => 'Date',
+    'Class:ActionRuleTrigger/Attribute:values_applied' => 'Applied values',
     'Menu:ActionRuleCreate' => 'New rule',
     'Menu:ActionRuleCreate+' => 'New rule',
     'Menu:ActionRules' => 'Rules on object',
     'Menu:ActionRules+' => 'Rules on object',
     'Menu:ActionRuleList' => 'Rules list',
     'Menu:ActionRuleList+' => 'Rules list',
+    'UI:ActionRuleTab' => 'Rules on objects',
 ));
 ?>

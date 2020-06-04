@@ -8,6 +8,7 @@ The rules can do the following:
 - Edit a value (of any type, but no linkedSet)
 - Apply a stimuli
 - Add elements to direct or indirect linkedSet
+- Add a tab on objects that have had a trigger
 
 ## Warnings
 The effects of rules could be heavy. Please test this module before installing it on production environments.
