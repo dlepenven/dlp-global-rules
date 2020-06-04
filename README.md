@@ -25,6 +25,7 @@ It is better to load this extension when all others are loaded. So You will have
 * Fill the form
     * Fill the name and desctiption fields as desired
     * Choose the status "enable" if you want to enable your rule. If not, the rule will never be triggered.
+    * Choose the trigger type : Create will trigger the rules on object creation only, update for object update only. 
     * Fill a valid target class (Ex: UserRequest)
     * Fill a valid OQL condition on the current object (Ex: (service_id=3 OR service_id=4) AND title='test')
     * Fill values to apply this way

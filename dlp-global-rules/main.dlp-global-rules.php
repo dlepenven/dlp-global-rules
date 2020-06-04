@@ -76,6 +76,7 @@ class TriggerActionTab implements iApplicationUIExtension
  */
 class ActionRuleActions implements iApplicationObjectExtension
 {
+    private static $_aInsertedObject = [];
     // Not used
     public function OnIsModified($oObject){}
     // Not used
@@ -85,18 +86,38 @@ class ActionRuleActions implements iApplicationObjectExtension
     // Not used
     public function OnDBDelete($oObject, $oChange = null){}
     // Not used
-    public function OnDBUpdate($oObject, $oChange = null){}
+    public function OnDBUpdate($oObject, $oChange = null)
+    {
+        if (isset(self::$_aInsertedObject[get_class($oObject)])
+            && in_array($oObject->GetKey(), self::$_aInsertedObject[get_class($oObject)])
+        ) {
+            // Do not trigger any update here
+            // it comes from an insert
+            // Maybe later we could make this configurable
+        } else {
+            // not the same object
+            $this->_triggerActions($oObject, "update");
+        }
+    }
 
     /**
      * Triggered on insert
      */
     public function OnDBInsert($oObject, $oChange = null)
     {
+        // Make a reference of inserted object
+        if (!isset(self::$_aInsertedObject[get_class($oObject)])) {
+            self::$_aInsertedObject[get_class($oObject)] = [];
+        }
+        self::$_aInsertedObject[get_class($oObject)][] = $oObject->GetKey();
+        // then, trigger actions for create
         $this->_triggerActions($oObject, "create");
     }
 
     /**
      * This function will search into action rules and trigger them
+     * 
+     * @return void
      */
     private function _triggerActions($oObj, string $sTriggeredAction)
     {

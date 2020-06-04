@@ -249,16 +249,22 @@ class ActionRuleHelper
     {
         $sHtml = '';
         $bCheckObj = ActionRuleHelper::checkObject($sHtml);
-        $bCheckValueToApply = ActionRuleHelper::checkValueToApply($sHtml);
-        $bCheckValue = ActionRuleHelper::checkValues($bHtml, $sHtml);
-        $bCheckCondition = ActionRuleHelper::checkCondition($sHtml);
-        if ($bHtml === true) {
-            return $sHtml;
+        if ($bCheckObj === true) {
+            $bCheckValueToApply = ActionRuleHelper::checkValueToApply($sHtml);
+            $bCheckValue = ActionRuleHelper::checkValues($bHtml, $sHtml);
+            $bCheckCondition = ActionRuleHelper::checkCondition($sHtml);
+            if ($bHtml === true) {
+                return $sHtml;
+            } else {
+                if ($bCheckValueToApply === true  && $bCheckValue === true && $bCheckCondition === true) {
+                    return true;
+                } else {
+                    return false;
+                }
+            }
         } else {
-            if ($bCheckObj === true && $bCheckValueToApply === true
-                && $bCheckValue === true && $bCheckCondition === true
-            ) {
-                return true;
+            if ($bHtml === true) {
+                return $sHtml;
             } else {
                 return false;
             }

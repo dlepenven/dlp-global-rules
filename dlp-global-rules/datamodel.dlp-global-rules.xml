@@ -149,6 +149,7 @@
                 <field id="trigger_type" xsi:type="AttributeEnum">
                     <values>
                         <value id="create">create</value>
+                        <value id="update">update</value>
                     </values>
                     <sql>trigger_type</sql>
                     <default_value>create</default_value>
