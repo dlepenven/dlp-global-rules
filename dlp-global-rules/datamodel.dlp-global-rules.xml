@@ -253,42 +253,50 @@
                             return false;
                         }
                         $aValuesToApply = explode(PHP_EOL, $sValuesToApply);
-                        foreach ($aValuesToApply as $sValue) {
-                            $aValue = explode(':', trim($sValue));
-                            if (isset($aValue[0])) {
-                                switch($aValue[0]) {
+                        foreach ($aValuesToApply as $sType) {
+                            $aType = explode(DLP_RULES_TYPE_SEPARATOR, trim($sType));
+                            if (isset($aType[0])) {
+                                switch($aType[0]) {
                                 case 'value':
-                                    if (count($aValue) === 3) {
-                                        $aDatas[] = [
-                                            'type' => 'value',
-                                            'col' => $aValue[1],
-                                            'value' => $aValue[2],
-                                        ];
+                                    if (count($aType) === 2) {
+                                        $aValue = explode(DLP_RULES_VALUE_SEPARATOR, $aType[1]);
+                                        if (count($aValue) == 2) {
+                                            $aDatas[] = [
+                                                'type' => 'value',
+                                                'col' => $aValue[0],
+                                                'value' => $aValue[1],
+                                            ];
+                                        } else {
+                                            return false;
+                                        }
                                     } else {
                                         return false;
                                     }
                                     break;
                                 case 'stimuli':
-                                    if (count($aValue) === 2) {
-                                        $aDatas[] = [
-                                            'type' => 'stimuli',
-                                            'value' => $aValue[1],
-                                        ];
+                                    if (count($aType) === 2) {
+                                        $aValue = explode(DLP_RULES_VALUE_SEPARATOR, $aType[1]);
+                                        if (count($aValue) == 2) {
+                                            $aDatas[] = [
+                                                'type' => 'stimuli',
+                                                'value' => $aValue[1],
+                                            ];
+                                        } else {
+                                            return false;
+                                        }
                                     } else {
                                         return false;
                                     }
                                     break;
                                 case 'link':
-                                    if (count($aValue) >= 3) {
+                                    if (count($aType) === 3) {
                                         $aTmp = [
                                             'type' => 'link',
-                                            'col' => $aValue[1],
+                                            'col' => $aType[1],
                                             'value' => [],
                                         ];
-                                        // look for values and set them
-                                        foreach ($aValue as $iK => $sVal) {
-                                            if ($iK !== 0 && $iK !== 1)
-                                            $aTmp['value'][] = $sVal;
+                                        foreach (explode(DLP_RULES_LINK_VALUE_SEPARATOR, $aType[2]) as $sValue) {
+                                            $aTmp['value'][] = $sValue;
                                         }
                                         $aDatas[] = $aTmp;
                                     } else {

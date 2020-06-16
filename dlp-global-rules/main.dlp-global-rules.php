@@ -41,7 +41,9 @@ class TriggerActionTab implements iApplicationUIExtension
 
     public function OnDisplayRelations($oObject, WebPage $oPage, $bEditMode = false)
     {
-        if (!$bEditMode) {
+        if (!$bEditMode
+            && MetaModel::GetModuleSetting('dlp-global-rules', 'show_tab_on_object', true)
+        ) {
             $iId = $oObject->GetKey();
             $sClassName = get_class($oObject);
             $aTriggers = DBObjectSearch::FromOQL("SELECT ActionRuleTrigger AS art WHERE art.obj_id = $iId AND art.class_name='$sClassName'");

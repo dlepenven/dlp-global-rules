@@ -29,6 +29,11 @@ SetupWebPage::AddModule(
         'data.sample' => array(),
         'doc.manual_setup' => '',
         'doc.more_information' => '',
-        'settings' => array(),
+        'settings' => array(
+            'show_tab_on_object' => true,
+            'value_separator' => '=',
+            'type_separator' => ':',
+            'link_value_separator' => '|',
+        ),
     )
 );

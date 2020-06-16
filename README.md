@@ -19,6 +19,12 @@ Use the editor documentation to install extensions : https://www.itophub.io/wiki
 
 ## Configuration
 It is better to load this extension when all others are loaded. So You will have to add necessary dependencies into `module.dlp-global-rules.php` depending on your itop instance.
+There is 4 parameters to configure in standard settings:
+* show_tab_on_object, default value is `true`. It set it to false to hide the trigger tab from related objects
+* value_separator, default value is `=`. It is the character used to separate a value from a col name.
+* type_separator, default value is `:`. It is the character used to separate a type from a col name.
+* link_value_separator, default value is `|`. It is the character used to separate multiple values from links
+If the values or not in your configuration file, you should run the full setup.
 
 ## Create your first rule
 * From the "Admin Tools" menu, click on the link : "Rules on objects configuration" and start creating a rule
@@ -28,12 +34,13 @@ It is better to load this extension when all others are loaded. So You will have
     * Choose the trigger type : Create will trigger the rules on object creation only, update for object update only. 
     * Fill a valid target class (Ex: UserRequest)
     * Fill a valid OQL condition on the current object (Ex: (service_id=3 OR service_id=4) AND title='test')
-    * Fill values to apply this way
+    * Fill values to apply this way (the separators refers to the default ones)
         * One value per line
-        * To set a value : "value:field_id:text", ex: "value:title:This is my new title" will change the title to "This is my new title". The quotes are not needed
-        * To apply a stimuli : "stimuli:stimuli_name", ex: "stimuli:ev_assign" will trigger assign stimuli.
-        * To set a new entry in a linkedSet : "link:field_id:col1/val1:col2/val2" etc... Ex : "link:contact_list:contact_id/3:role_code/do_not_notify" will add the contact with id 3 with the role 'Do not notify' to the object
+        * To set a value : "value:field_id=text", ex: "value:title=This is my new title" will change the title to "This is my new title". The quotes are not needed
+        * To apply a stimuli : "stimuli:name=stimuli_name", ex: "stimuli:name=ev_assign" will trigger assign stimuli.
+        * To set a new entry in a linkedSet : "link:field_id:col1=val1|col2=val2" etc... Ex : "link:contact_list:contact_id=3|role_code=do_not_notify" will add the contact with id 3 with the role 'Do not notify' to the object
         * All values are applied in given order.
+    * A value can be a text, number, date or even a refence of a value of the object by user this->[col_name]. Ex: On a UserRequest class, link:contact_list:contact_id=this->caller_id Will link the caller of the ticket as a contact too.
         
 ![Create](readme/imgs/create.png?raw=true "Create")
 
@@ -48,15 +55,14 @@ If a test is not valid, the rule will not be applied
 Today it only works when creating a new object. It is not correct to enable if for updates since it could create many loops.
 The values are applied considering the rights of the current user. For example, if a user does not have the right to apply a stilumi, it can trigger an error.
 
-## Limits
-For the moment, following characters are reserved to parse the configuration : 
-- `: /`
+## Known limitations
+* For the moment, the EOL (PHP_EOL), `->`, and the 3 charaters in configuration are reserved to parse the configuration.
+* A value matching the object field name will take the value of the object field value.
 
 ## Ideas
-- Better parsing / Config area
-- Check mandatory fields
-- Try to catch errors
-- etc...
+* Check mandatory fields
+* Try to catch errors
+* Change the reference matching by using something like `this->field`
 
 ## Third part
 - Icon : https://www.iconfinder.com/Juliia_Os

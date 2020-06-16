@@ -7,6 +7,10 @@
  * @license   AGPL http://opensource.org/licenses/AGPL-3.0
  */
 
+define('DLP_RULES_VALUE_SEPARATOR', MetaModel::GetModuleSetting('dlp-global-rules', 'value_separator', '='));
+define('DLP_RULES_TYPE_SEPARATOR', MetaModel::GetModuleSetting('dlp-global-rules', 'type_separator', ':'));
+define('DLP_RULES_LINK_VALUE_SEPARATOR', MetaModel::GetModuleSetting('dlp-global-rules', 'link_value_separator', '|'));
+
 /**
  * This class have some tester methods etc...
  * 
@@ -164,6 +168,12 @@ class ActionRuleHelper
                     }
                 } else {
                     $sHtml .= self::_makeHtmlTableRow(true, "The attribute " . $aTable['col'] . " is valid for the object " . self::getTargetClass());              
+                    // check the value itself, if it is a reference to local column
+                    if (self::_checkExternalId($sHtml, $aTable['col'], $aTable['value']) === false
+                        && $bHtml === false
+                    ) {
+                        return false;
+                    }
                 }
                 break;
             case 'link':
@@ -182,22 +192,43 @@ class ActionRuleHelper
                         $bExtKey = false;
                         $sLinkClass = $oAtt->GetLinkedClass();
                         foreach ($aTable['value'] as $sLinkValue) {
-                            $aLinkValue = explode('/', $sLinkValue);
+                            $aLinkValue = explode(DLP_RULES_VALUE_SEPARATOR, $sLinkValue);
                             if (count($aLinkValue) === 2) {
-                                if (MetaModel::IsValidAttCode($sLinkClass, $aLinkValue[0])
-                                    || (!$oAtt->IsIndirect() && $aLinkValue[0] === 'id')
-                                ) {
+                                if (MetaModel::IsValidAttCode($sLinkClass, $aLinkValue[0]) || (!$oAtt->IsIndirect() && $aLinkValue[0] === 'id')) {
                                     $sHtml .= self::_makeHtmlTableRow(true, "The value " . $sLinkValue . " is valid for linkset " . $aTable['col'] . " for the object " . self::getTargetClass());
                                     // Depends on link type, we check the ext key
                                     if ($oAtt->IsIndirect()) { // n:n link
                                         if ($aLinkValue[0] === $oAtt->GetExtKeyToRemote()) {
-                                            $sHtml .= self::_makeHtmlTableRow(true, "The external key " . $sLinkValue . " is valid for linkset " . $aTable['col'] . " for the object " . self::getTargetClass());
                                             $bExtKey = true;
+                                            if (self::_checkExternalId($sHtml, $aLinkValue[0], $aLinkValue[1], $sLinkClass) === false) {
+                                                $sHtml .= self::_makeHtmlTableRow(false, "The external key " . $sLinkValue . " is not valid for linkset " . $aTable['col'] . " for the object " . self::getTargetClass());
+                                                if ($bHtml === false) {
+                                                    return false;
+                                                }
+                                            } else {
+                                                $sHtml .= self::_makeHtmlTableRow(true, "The external key " . $sLinkValue . " is valid for linkset " . $aTable['col'] . " for the object " . self::getTargetClass());
+                                            }
                                         }
                                     } else { // 1:n link
-                                        if ($aLinkValue[0] === 'id') {
-                                            $sHtml .= self::_makeHtmlTableRow(true, "The external key " . $sLinkValue . " is valid for linkset " . $aTable['col'] . " for the object " . self::getTargetClass());
+                                        if ($aLinkValue[0] === 'id') {       
                                             $bExtKey = true;
+                                            // check if object exists
+                                            $aMatches = [];
+                                            if (preg_match('/this\->(.*)/', $aLinkValue[1], $aMatches)
+                                                && MetaModel::IsValidAttCode(self::getTargetClass(), $aMatches[1])
+                                            ) {
+                                                $sHtml .= self::_makeHtmlTableRow(true, "The value " . $aLinkValue[1] . " is an attribute of " . self::getTargetClass());
+                                            } else {
+                                                $oObjExternal = MetaModel::GetObject($sLinkClass, $aLinkValue[1], false);
+                                                if (is_null($oObjExternal)) {
+                                                    $sHtml .= self::_makeHtmlTableRow(false, "The external key " . $sLinkValue . " is not valid for linkset " . $aTable['col'] . " for the object " . self::getTargetClass());
+                                                    if ($bHtml === false) {
+                                                        return false;
+                                                    }
+                                                } else {
+                                                    $sHtml .= self::_makeHtmlTableRow(true, "The external key " . $sLinkValue . " is valid for linkset " . $aTable['col'] . " for the object " . self::getTargetClass());
+                                                }
+                                            }
                                         }
                                     }
                                 } else {
@@ -334,13 +365,13 @@ class ActionRuleHelper
     {
         // at this steps, values has been checked already
         // Check if condition is
-        foreach (self::getValuesToApply() as $sK => $aTable) {
+        foreach (self::getValuesToApply() as $aTable) {
             switch($aTable['type']) {
             case 'stimuli':
                 $oObject->ApplyStimulus($aTable['value']);
                 break;
             case 'value':
-                $oObject->Set($aTable['col'], $aTable['value']);
+                $oObject->Set($aTable['col'], self::_getFinalValue($oObject, $aTable['value']));
                 break;
             case 'link':
                 $oAtt = MetaModel::GetAttributeDef(self::getTargetClass(), $aTable['col']);
@@ -350,13 +381,13 @@ class ActionRuleHelper
                     $oSet = $oObject->Get($aTable['col']);
                 }
                 foreach ($aTable['value'] as $sLinkValue) {
-                    $aLinkValue = explode('/', $sLinkValue);
+                    $aLinkValue = explode(DLP_RULES_VALUE_SEPARATOR, $sLinkValue);
                     if ($oAtt->IsIndirect()) {
-                        $oLinkedSet->Set($aLinkValue[0], $aLinkValue[1]);
+                        $oLinkedSet->Set($aLinkValue[0], self::_getFinalValue($oObject, $aLinkValue[1]));
                     } else {
                         // only one value here
                         // get link object, set new value for
-                        $oLnkObj = MetaModel::GetObject($sLinkClass, $aLinkValue[1], false); // false => not sure it exists
+                        $oLnkObj = MetaModel::GetObject($sLinkClass, self::_getFinalValue($oObject, $aLinkValue[1]), false); // false => not sure it exists
                         if (is_object($oLnkObj)) {
                             $oLnkObj->Set($oAtt->GetExtKeyToMe(), $oObject->GetKey());
                             $oLnkObj->DBUpdate();
@@ -391,5 +422,67 @@ class ActionRuleHelper
         }
 
         return "<tr>" . $sCell1 . "<td>" . $sMsg . "</td>" . "</tr>";
+    }
+
+    /**
+     * This function will try to check an external ID
+     * 
+     * @param string $sHtml       The current html return
+     * @param string $sCol        The Col to external Key
+     * @param string $sVal        The value to check
+     * @param string $sForceClass A class can be forced instead of current obj
+     * 
+     * @return bool True in case of success, false in other cases
+     */
+    private static function _checkExternalId(string &$sHtml, string $sCol, string $sVal, string $sForceClass = '') : bool
+    {
+        $bReturn = true;
+        if ($sForceClass === '') {
+            $sClass = self::getTargetClass();
+        } else {
+            $sClass = $sForceClass;
+        }
+
+        // If matching this->value, and corresponding to a valid attribute
+        if (preg_match('/this\->(.*)/', $sVal, $aMatches)
+            && MetaModel::IsValidAttCode(self::getTargetClass(), $aMatches[1])
+        ) {
+            // It is a reference to a local column. Consider it valid
+            $sHtml .= self::_makeHtmlTableRow(true, "The value " . $sVal . " is an attribute of " . self::getTargetClass());
+        } else { // Direct value
+            // Check if it is a id ref or direct value
+            $oAttDef = MetaModel::GetAttributeDef($sClass, $sCol);
+            if ($oAttDef->IsExternalKey()) {
+                // check if id is found
+                $oObjExternal = MetaModel::GetObject($oAttDef->GetTargetClass(), $sVal, false);
+                if (is_null($oObjExternal)) {
+                    $sHtml .= self::_makeHtmlTableRow(false, "The value " . $sVal . " is not valid for the column " . $sCol . " for the object " . $sClass);
+                    $bReturn = false;
+                } else {
+                    $sHtml .= self::_makeHtmlTableRow(true, "The value " . $sVal . " is valid for the column " . $sCol . " for the object " . $sClass);
+                }
+            } else {
+                // @TODO : Check at least the value here ?
+                $sHtml .= self::_makeHtmlTableRow(true, "The value " . $sVal. " is valid for the column " . $sCol . " for the object " . $sClass);
+            }
+        }
+        return $bReturn;
+    }
+
+    /**
+     * This function will return a computed value depending on some conditions
+     * 
+     * @return mixed
+     */
+    private static function _getFinalValue($oObject, $sVal) 
+    {
+        $aMatches = [];
+        if (preg_match('/this\->(.*)/', $sVal, $aMatches)
+            && MetaModel::IsValidAttCode(self::getTargetClass(), $aMatches[1])
+        ) {
+            return $oObject->Get($aMatches[1]);
+        } else {
+            return $sVal;
+        }
     }
 }
