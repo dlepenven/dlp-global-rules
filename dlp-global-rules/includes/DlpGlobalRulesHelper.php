@@ -18,7 +18,7 @@ define('DLP_RULES_LINK_VALUE_SEPARATOR', MetaModel::GetModuleSetting('dlp-global
  * @copyright 2020 David LE PENVEN
  * @license   AGPL http://opensource.org/licenses/AGPL-3.0
  */
-class ActionRuleHelper
+class DlpGlobalRulesHelper
 {
 
     private static $_oActionRuleObject;
@@ -279,11 +279,11 @@ class ActionRuleHelper
     public static function checkAll(bool $bHtml = false)
     {
         $sHtml = '';
-        $bCheckObj = ActionRuleHelper::checkObject($sHtml);
+        $bCheckObj = DlpGlobalRulesHelper::checkObject($sHtml);
         if ($bCheckObj === true) {
-            $bCheckValueToApply = ActionRuleHelper::checkValueToApply($sHtml);
-            $bCheckValue = ActionRuleHelper::checkValues($bHtml, $sHtml);
-            $bCheckCondition = ActionRuleHelper::checkCondition($sHtml);
+            $bCheckValueToApply = DlpGlobalRulesHelper::checkValueToApply($sHtml);
+            $bCheckValue = DlpGlobalRulesHelper::checkValues($bHtml, $sHtml);
+            $bCheckCondition = DlpGlobalRulesHelper::checkCondition($sHtml);
             if ($bHtml === true) {
                 return $sHtml;
             } else {
@@ -340,6 +340,7 @@ class ActionRuleHelper
      */
     public static function checkConditionToApply($oObject): bool
     {
+        $sWhere = "";
         if (self::getActionRuleObject()->Get('condition') != '' && !is_null(self::getActionRuleObject()->Get('condition'))) {
             $sWhere = " (" . self::getActionRuleObject()->Get('condition') . ") AND ";
         }
@@ -365,6 +366,11 @@ class ActionRuleHelper
     {
         // at this steps, values has been checked already
         // Check if condition is
+        $oAction = self::getActionRuleObject();
+        // if bypass is set to yes, reset config
+        if ($oAction->Get('bypass_userrights') === 'yes') {
+            self::disableRightChecks();
+        }
         foreach (self::getValuesToApply() as $aTable) {
             switch($aTable['type']) {
             case 'stimuli':
@@ -403,6 +409,23 @@ class ActionRuleHelper
         }
         // Update values
         $oObject->DBUpdate();
+        // Reset config to original at the end
+        self::enableRightChecks();
+    }
+
+    public static function disableRightChecks()
+    {
+        $sConfigFile = utils::GetConfigFilePath();
+        $oConfig = new Config($sConfigFile);
+        $oConfig->Set('skip_check_to_write', true);
+        MetaModel::LoadConfig($oConfig);
+    }
+
+    public static function enableRightChecks()
+    {
+        $sConfigFile = utils::GetConfigFilePath();
+        $oConfig = new Config($sConfigFile);
+        MetaModel::LoadConfig($oConfig);
     }
 
     /**

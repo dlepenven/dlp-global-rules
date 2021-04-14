@@ -146,10 +146,21 @@
                     <default_value>disabled</default_value>
                     <is_null_allowed>false</is_null_allowed>
                 </field>
+                <field id="bypass_userrights" xsi:type="AttributeEnum">
+                    <values>
+                        <value id="yes">yes</value>
+                        <value id="no">no</value>
+                    </values>
+                    <sql>bypass_userrights</sql>
+                    <default_value>no</default_value>
+                    <is_null_allowed>false</is_null_allowed>
+                </field>
                 <field id="trigger_type" xsi:type="AttributeEnum">
                     <values>
                         <value id="create">create</value>
                         <value id="update">update</value>
+                        <value id="console_update">console_update</value>
+                        <value id="portal_update">portal_update</value>
                     </values>
                     <sql>trigger_type</sql>
                     <default_value>create</default_value>
@@ -184,6 +195,9 @@
                         </item>
                         <item id="status">
                             <rank>20</rank>
+                        </item>
+                        <item id="bypass_userrights">
+                            <rank>25</rank>
                         </item>
                         <item id="trigger_type">
                             <rank>30</rank>
@@ -227,7 +241,7 @@
                         if (!$bEditMode)  {
                             if ($this instanceof ActionRule)  {
                                 $oPage->SetCurrentTab(Dict::S('Class:ActionRule/Title:Tester'));
-                                $sUrl =  utils::GetAbsoluteUrlModulePage('dlp-global-rules', 'tester.dlp-global-rules.php') 
+                                $sUrl =  utils::GetAbsoluteUrlModulePage('dlp-global-rules', 'DlpGlobalRulesTester.php') 
                                     . '&action=tester&oid=' . $this->GetKey();
                                 $oPage->add("<div id='tester' class='resizable' style='height:1000px;'>
                                 <iframe src='" . $sUrl. "' style='width:100%;height:100%;'></iframe>
