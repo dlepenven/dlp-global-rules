@@ -11,7 +11,7 @@
                 * @copyright 2020 David LE PENVEN
                 * @license   AGPL http://opensource.org/licenses/AGPL-3.0
                 */]]></comment>
-                <category>bizmodel,searchable,changemgmt</category>
+                <category>core/cmdb,view_in_gui</category>
                 <abstract>false</abstract>
                 <key_type>autoincrement</key_type>
                 <db_table>actionruletrigger</db_table>
@@ -146,15 +146,6 @@
                     <default_value>disabled</default_value>
                     <is_null_allowed>false</is_null_allowed>
                 </field>
-                <field id="bypass_userrights" xsi:type="AttributeEnum">
-                    <values>
-                        <value id="yes">yes</value>
-                        <value id="no">no</value>
-                    </values>
-                    <sql>bypass_userrights</sql>
-                    <default_value>no</default_value>
-                    <is_null_allowed>false</is_null_allowed>
-                </field>
                 <field id="trigger_type" xsi:type="AttributeEnum">
                     <values>
                         <value id="create">create</value>
@@ -195,9 +186,6 @@
                         </item>
                         <item id="status">
                             <rank>20</rank>
-                        </item>
-                        <item id="bypass_userrights">
-                            <rank>25</rank>
                         </item>
                         <item id="trigger_type">
                             <rank>30</rank>

@@ -81,9 +81,6 @@ class DlpGlobalRulesObjectExtension implements iApplicationObjectExtension
                 DlpGlobalRulesHelper::init($oActionRule->GetKey());
                 if (DlpGlobalRulesHelper::checkAll() && DlpGlobalRulesHelper::checkConditionToApply($oObj)) {
                     // insert a new trigger : ActionRuleTrigger
-
-                    DlpGlobalRulesHelper::disableRightChecks();
-
                     $oActionRuleTrigger = MetaModel::NewObject('ActionRuleTrigger');
                     $oActionRuleTrigger->Set('obj_id', $oObj->GetKey());
                     $oActionRuleTrigger->Set('class_name', get_class($oObj));
@@ -91,9 +88,6 @@ class DlpGlobalRulesObjectExtension implements iApplicationObjectExtension
                     $oActionRuleTrigger->Set('date', date('Y-m-d H:i:s'));
                     $oActionRuleTrigger->Set('values_applied', $oActionRule->Get('values_to_apply'));
                     $oActionRuleTrigger->DBInsert();
-
-                    DlpGlobalRulesHelper::enableRightChecks();
-
                     // Exec Jobs
                     DlpGlobalRulesHelper::execAll($oObj);
                 }

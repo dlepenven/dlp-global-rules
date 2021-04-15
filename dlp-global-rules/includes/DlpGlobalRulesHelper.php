@@ -368,9 +368,6 @@ class DlpGlobalRulesHelper
         // Check if condition is
         $oAction = self::getActionRuleObject();
         // if bypass is set to yes, reset config
-        if ($oAction->Get('bypass_userrights') === 'yes') {
-            self::disableRightChecks();
-        }
         foreach (self::getValuesToApply() as $aTable) {
             switch($aTable['type']) {
             case 'stimuli':
@@ -410,22 +407,6 @@ class DlpGlobalRulesHelper
         // Update values
         $oObject->DBUpdate();
         // Reset config to original at the end
-        self::enableRightChecks();
-    }
-
-    public static function disableRightChecks()
-    {
-        $sConfigFile = utils::GetConfigFilePath();
-        $oConfig = new Config($sConfigFile);
-        $oConfig->Set('skip_check_to_write', true);
-        MetaModel::LoadConfig($oConfig);
-    }
-
-    public static function enableRightChecks()
-    {
-        $sConfigFile = utils::GetConfigFilePath();
-        $oConfig = new Config($sConfigFile);
-        MetaModel::LoadConfig($oConfig);
     }
 
     /**
