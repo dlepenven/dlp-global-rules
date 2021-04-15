@@ -16,6 +16,8 @@ Dict::Add('FR FR', 'French', 'Français', array(
     'Class:ActionRule/Attribute:status/Value:disabled' => 'Désactivée',
     'Class:ActionRule/Attribute:trigger_type' => 'Type de déclancheur',
     'Class:ActionRule/Attribute:trigger_type/Value:create' => 'Création',
+    'Class:ActionRule/Attribute:trigger_type/Value:console_create' => 'Création console',
+    'Class:ActionRule/Attribute:trigger_type/Value:portal_create' => 'Création portail',
     'Class:ActionRule/Attribute:trigger_type/Value:update' => 'Mise à jour',
     'Class:ActionRule/Attribute:trigger_type/Value:console_update' => 'Mise à jour console',
     'Class:ActionRule/Attribute:trigger_type/Value:portal_update' => 'Mise à jour portail',

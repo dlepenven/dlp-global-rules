@@ -60,6 +60,15 @@ class DlpGlobalRulesObjectExtension implements iApplicationObjectExtension
             self::$_aInsertedObject[get_class($oObject)] = [];
         }
         self::$_aInsertedObject[get_class($oObject)][] = $oObject->GetKey();
+        // Get portal modules
+        $aPortalModules = MetaModel::GetModuleSetting('dlp-global-rules', 'itop_portal_modules', []);
+            if (isset($_GET['exec_module']) && in_array($_GET['exec_module'], $aPortalModules)) {
+                // means a portal update
+                $this->_triggerActions($oObject, "portal_create");
+            } else {
+                // means others
+                $this->_triggerActions($oObject, "console_create");
+            }
         // then, trigger actions for create
         $this->_triggerActions($oObject, "create");
     }

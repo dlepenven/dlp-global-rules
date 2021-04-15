@@ -149,6 +149,8 @@
                 <field id="trigger_type" xsi:type="AttributeEnum">
                     <values>
                         <value id="create">create</value>
+                        <value id="console_create">console_create</value>
+                        <value id="portal_create">portal_create</value>
                         <value id="update">update</value>
                         <value id="console_update">console_update</value>
                         <value id="portal_update">portal_update</value>

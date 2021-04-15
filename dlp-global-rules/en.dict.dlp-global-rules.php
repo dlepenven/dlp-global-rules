@@ -16,6 +16,8 @@ Dict::Add('EN US', 'English', 'English', array(
     'Class:ActionRule/Attribute:status/Value:disabled' => 'Disabled',
     'Class:ActionRule/Attribute:trigger_type' => 'Trigger type',
     'Class:ActionRule/Attribute:trigger_type/Value:create' => 'Create',
+    'Class:ActionRule/Attribute:trigger_type/Value:console_create' => 'Console update',
+    'Class:ActionRule/Attribute:trigger_type/Value:portal_create' => 'Portal update',
     'Class:ActionRule/Attribute:trigger_type/Value:update' => 'Update',
     'Class:ActionRule/Attribute:trigger_type/Value:console_update' => 'Console update',
     'Class:ActionRule/Attribute:trigger_type/Value:portal_update' => 'Portal update',
