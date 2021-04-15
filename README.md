@@ -25,13 +25,14 @@ There is 4 parameters to configure in standard settings:
 * type_separator, default value is `:`. It is the character used to separate a type from a col name.
 * link_value_separator, default value is `|`. It is the character used to separate multiple values from links
 If the values or not in your configuration file, you should run the full setup.
+* itop_portal_modules, default value is ['itop-portal-base']. It is the list of portals. It is used to trigger specific actions from portal.
 
 ## Create your first rule
 * From the "Admin Tools" menu, click on the link : "Rules on objects configuration" and start creating a rule
 * Fill the form
     * Fill the name and desctiption fields as desired
     * Choose the status "enable" if you want to enable your rule. If not, the rule will never be triggered.
-    * Choose the trigger type : Create will trigger the rules on object creation only, update for object update only. 
+    * Choose the trigger type : Create will trigger the rules on object creation only, update for object update only. You can also choose console or portal create and update trigger.
     * Fill a valid target class (Ex: UserRequest)
     * Fill a valid OQL condition on the current object (Ex: (service_id=3 OR service_id=4) AND title='test')
     * Fill values to apply this way (the separators refers to the default ones)

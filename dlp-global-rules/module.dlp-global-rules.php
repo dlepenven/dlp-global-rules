@@ -9,7 +9,7 @@
 
 SetupWebPage::AddModule(
     __FILE__,
-    'dlp-global-rules/1.0.0',
+    'dlp-global-rules/2.0.0',
     array(
         'label' => 'Create rules on objects to change values and apply stimulus',
         'category' => 'business',
@@ -21,8 +21,7 @@ SetupWebPage::AddModule(
         'visible' => true,
         'datamodel' => array(
             'model.dlp-global-rules.php',
-            'helper.dlp-global-rules.php',
-            'main.dlp-global-rules.php'
+            'loader.php'
         ),
         'webservice' => array(),
         'data.struct' => array(),
@@ -34,6 +33,9 @@ SetupWebPage::AddModule(
             'value_separator' => '=',
             'type_separator' => ':',
             'link_value_separator' => '|',
+            'itop_portal_modules' => [
+                'itop-portal-base'
+            ]
         ),
     )
 );

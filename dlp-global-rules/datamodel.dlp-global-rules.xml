@@ -11,7 +11,7 @@
                 * @copyright 2020 David LE PENVEN
                 * @license   AGPL http://opensource.org/licenses/AGPL-3.0
                 */]]></comment>
-                <category>bizmodel,searchable,changemgmt</category>
+                <category>core/cmdb,view_in_gui</category>
                 <abstract>false</abstract>
                 <key_type>autoincrement</key_type>
                 <db_table>actionruletrigger</db_table>
@@ -149,7 +149,11 @@
                 <field id="trigger_type" xsi:type="AttributeEnum">
                     <values>
                         <value id="create">create</value>
+                        <value id="console_create">console_create</value>
+                        <value id="portal_create">portal_create</value>
                         <value id="update">update</value>
+                        <value id="console_update">console_update</value>
+                        <value id="portal_update">portal_update</value>
                     </values>
                     <sql>trigger_type</sql>
                     <default_value>create</default_value>
@@ -227,7 +231,7 @@
                         if (!$bEditMode)  {
                             if ($this instanceof ActionRule)  {
                                 $oPage->SetCurrentTab(Dict::S('Class:ActionRule/Title:Tester'));
-                                $sUrl =  utils::GetAbsoluteUrlModulePage('dlp-global-rules', 'tester.dlp-global-rules.php') 
+                                $sUrl =  utils::GetAbsoluteUrlModulePage('dlp-global-rules', 'DlpGlobalRulesTester.php') 
                                     . '&action=tester&oid=' . $this->GetKey();
                                 $oPage->add("<div id='tester' class='resizable' style='height:1000px;'>
                                 <iframe src='" . $sUrl. "' style='width:100%;height:100%;'></iframe>
