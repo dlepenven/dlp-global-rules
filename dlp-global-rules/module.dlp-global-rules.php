@@ -34,7 +34,8 @@ SetupWebPage::AddModule(
             'type_separator' => ':',
             'link_value_separator' => '|',
             'itop_portal_modules' => [
-                'itop-portal-base'
+                'itop-portal-base',
+                'itop-portal',
             ]
         ),
     )
